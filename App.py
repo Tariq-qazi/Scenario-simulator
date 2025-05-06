@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import plotly.express as px
-import openai
+from openai import OpenAI
 
 # App title
 st.set_page_config(page_title="Scenario Simulation Assistant", layout="wide")
@@ -70,9 +70,9 @@ if before_file and after_file:
     else:
         st.info("No milestone changes detected.")
 
-    # GPT summary
+    # GPT summary (OpenAI v1.0+)
     st.subheader("AI Impact Summary")
-    openai.api_key = st.secrets["openai"]["api_key"]
+    client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
     summary_prompt = f"""
     Analyze the following schedule changes:
@@ -85,8 +85,8 @@ if before_file and after_file:
     """
 
     if st.button("Generate Summary"):
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": summary_prompt}]
         )
-        st.markdown(response["choices"][0]["message"]["content"])
+        st.markdown(response.choices[0].message.content)
