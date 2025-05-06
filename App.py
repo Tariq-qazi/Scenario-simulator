@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 from datetime import timedelta
 from openai import OpenAI
-from helper_exports import create_powerpoint, create_word_doc  # External helper file
+from helper_exports import create_powerpoint, create_word_doc
 
 st.set_page_config(page_title="Scenario Simulation Assistant", layout="wide")
 st.title("Primavera Scenario Simulation Assistant")
 
-# Step 1: Upload Files
+# Upload files
 st.header("Step 1: Upload Your Primavera Schedules")
 col1, col2 = st.columns(2)
 with col1:
@@ -17,7 +17,7 @@ with col1:
 with col2:
     after_file = st.file_uploader("Upload UPDATED schedule (Excel)", type=["xlsx"], key="after")
 
-# Step 2: Process and Compare
+# Process and compare
 if before_file and after_file:
     df_before = pd.read_excel(before_file)
     df_after = pd.read_excel(after_file)
@@ -36,7 +36,7 @@ if before_file and after_file:
     st.subheader("Changed Activities")
     st.dataframe(changed_rows[display_cols])
 
-    # Step 3: Float Change Chart
+    # Float chart
     st.subheader("Float Change Chart")
     changed_rows["Float Change"] = changed_rows["Total Float_after"] - changed_rows["Total Float_before"]
     fig_float, ax = plt.subplots(figsize=(10, 4))
@@ -46,7 +46,7 @@ if before_file and after_file:
     ax.tick_params(axis='x', rotation=45)
     st.pyplot(fig_float)
 
-    # Step 4: Milestone Movement Chart
+    # Milestone movement
     st.subheader("Milestone Movement Plot")
     milestone_mask = changed_rows["Activity Name_before"].str.contains("milestone", case=False)
     milestone_df = changed_rows[milestone_mask][[merge_key, "Activity Name_before", "Finish_before", "Finish_after"]].copy()
@@ -63,35 +63,35 @@ if before_file and after_file:
         st.plotly_chart(fig_milestone)
     else:
         st.info("No milestone changes detected.")
-        fig_milestone = plt.figure()  # empty placeholder for export
+        fig_milestone = plt.figure()
 
-    # Step 5: GPT Structured Summary
-    st.subheader("AI Impact Summary (Structured)")
+    # GPT Summary
+    st.subheader("AI Impact Summary (Structured & Bullet Format)")
     client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
     summary_prompt = f"""
-You are a scheduling analyst. Summarize the following Primavera schedule changes using short, clear sections with bullet points.
+You are a senior delay analyst reporting on Primavera schedule changes. Use the exact structure and markdown format below. Be concise and use bullet points for all sections except the Overview.
 
 DATA:
 {changed_rows[display_cols].to_string(index=False)}
 
 FORMAT:
-**1. Overview**
-- What changed and why
+### 1. Overview
+Summarize what happened in 2–3 lines.
 
-**2. Impacted Activities**
-- List delayed or shifted activities and by how much
+### 2. Impacted Activities
+- List key activities and how much they shifted
 
-**3. Critical Path / Float Changes**
-- Mention float changes and any new critical path exposure
+### 3. Critical Path / Float Changes
+- Mention float reductions or new critical paths
 
-**4. Milestone Impacts**
-- Identify delayed milestones and how far they shifted
+### 4. Milestone Impacts
+- Identify milestone delays with old/new dates
 
-**5. Recommendations**
-- Suggest possible actions or mitigations (add crews, resequence, etc.)
+### 5. Recommendations
+- Suggest 2–3 actions to mitigate or recover
 
-Respond in clean markdown format.
+Output using the exact format and bullet structure above.
 """
 
     if st.button("Generate AI Summary"):
@@ -102,7 +102,7 @@ Respond in clean markdown format.
         gpt_output = response.choices[0].message.content
         st.markdown(gpt_output)
 
-        # Export Options
+        # Export buttons
         st.success("Generate reports with explanation and visuals:")
         col1, col2 = st.columns(2)
 
