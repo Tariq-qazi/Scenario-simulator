@@ -3,4 +3,6 @@ pandas
 openpyxl
 matplotlib
 plotly
+python-pptx
+python-docx
 openai>=1.0.0
