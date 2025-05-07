@@ -66,6 +66,7 @@ if before_file and after_file:
         fig_milestone, ax = plt.subplots(figsize=(6, 3))
         ax.text(0.5, 0.5, "No milestone changes detected", fontsize=12, ha='center', va='center')
         ax.set_axis_off()
+
     # GPT Summary
     st.subheader("AI Impact Summary (Structured & Bullet Format)")
     client = OpenAI(api_key=st.secrets["openai"]["api_key"])
